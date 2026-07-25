@@ -210,13 +210,13 @@ async def seed_database():
         # --- Male Oral Medications ---
         male_meds_data = [
             {
-                "name": "Цистокс Д форте",
-                "type": MedicationType.PACKET,
-                "dosage": "1 paketik 50ml suvga",
-                "instruction": "Ovqatdan keyin",
+                "name": "Уростим 50mg",
+                "type": MedicationType.TABLET,
+                "dosage": "1 tabletka",
+                "instruction": "Ovqatdan oldin",
                 "frequency": "Kuniga 1 marta (ertalab)",
-                "times": ["08:00"],
-                "duration_days": 15,
+                "times": ["07:30"],
+                "duration_days": 30,
                 "notes": None,
             },
             {
@@ -230,24 +230,14 @@ async def seed_database():
                 "notes": None,
             },
             {
-                "name": "Уростим 50mg",
-                "type": MedicationType.TABLET,
-                "dosage": "1 tabletka",
-                "instruction": "Ovqatdan oldin",
-                "frequency": "Kuniga 1 marta (ertalab)",
-                "times": ["08:00"],
-                "duration_days": 30,
-                "notes": None,
-            },
-            {
-                "name": "Олинорм",
-                "type": MedicationType.SUPPOSITORY,
-                "dosage": "1 svecha",
-                "instruction": "Kechasi",
+                "name": "Цистокс Д форте",
+                "type": MedicationType.PACKET,
+                "dosage": "1 paketik 50ml suvga",
+                "instruction": "Ovqatdan keyin",
                 "frequency": "Kuniga 1 marta (kechasi)",
-                "times": ["21:00"],
-                "duration_days": 10,
-                "notes": "Tarkibi: gialuron kislota, sut kislotasi, choy daraxti, Vitamin A, Vitamin E",
+                "times": ["20:30"],
+                "duration_days": 15,
+                "notes": None,
             },
         ]
 
@@ -286,7 +276,7 @@ async def seed_database():
         await session.commit()
         print("Database seeded successfully!")
         print(f"  - Female user (Ayol): PIN 1234, {len(female_meds_data)} medications")
-        print(f"  - Male user (Erkak): PIN 1234, {len(male_meds_data)} medications")
+        print(f"  - Male user (Erkak): PIN 1234, {len(male_meds_data)} medications (no suppository)")
 
 
 async def reset_database():
