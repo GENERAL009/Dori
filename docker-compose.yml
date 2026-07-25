@@ -1,0 +1,104 @@
+services:
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    container_name: dori-backend
+    ports:
+      - "8000:8000"
+    env_file:
+      - .env
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    networks:
+      - dori-network
+    restart: unless-stopped
+    volumes:
+      - ./backend:/app
+
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    container_name: dori-frontend
+    ports:
+      - "3000:80"
+    networks:
+      - dori-network
+    restart: unless-stopped
+
+  bot:
+    build:
+      context: ./bot
+      dockerfile: Dockerfile
+    container_name: dori-bot
+    environment:
+      - TELEGRAM_BOT_TOKEN=8838868114:AAEZ2FMxmgfOBkMh3PSStRjFdMHYbBr8bu8
+      - DATABASE_URL=postgresql+asyncpg://dori:dori_secret_2024@postgres:5432/dori
+    depends_on:
+      postgres:
+        condition: service_healthy
+    networks:
+      - dori-network
+    restart: unless-stopped
+
+  postgres:
+    image: postgres:16-alpine
+    container_name: dori-postgres
+    ports:
+      - "5432:5432"
+    environment:
+      POSTGRES_DB: dori
+      POSTGRES_USER: dori
+      POSTGRES_PASSWORD: dori_secret_2024
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    networks:
+      - dori-network
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U dori -d dori"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+  redis:
+    image: redis:7-alpine
+    container_name: dori-redis
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis_data:/data
+    networks:
+      - dori-network
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+  nginx:
+    image: nginx:alpine
+    container_name: dori-nginx
+    ports:
+      - "80:80"
+    volumes:
+      - ./nginx/nginx.conf:/etc/nginx/nginx.conf:ro
+    depends_on:
+      - backend
+      - frontend
+    networks:
+      - dori-network
+    restart: unless-stopped
+
+networks:
+  dori-network:
+    driver: bridge
+
+volumes:
+  postgres_data:
+  redis_data:

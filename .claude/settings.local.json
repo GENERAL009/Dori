@@ -1,0 +1,22 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(npm install *)",
+      "Bash(npx tsc *)",
+      "Bash(./node_modules/.bin/tsc --noEmit)",
+      "Bash(node node_modules/typescript/bin/tsc --noEmit)",
+      "Bash(node node_modules/vite/bin/vite.js build)",
+      "Bash(npx vite *)",
+      "Bash(docker compose *)",
+      "Bash(curl -s http://localhost:8000/health)",
+      "Bash(python -m json.tool)",
+      "Bash(curl *)",
+      "Bash(docker restart dori-nginx *)",
+      "Bash(docker exec dori-postgres *)",
+      "Bash(python -c \"import sys,json; data=json.load\\(sys.stdin\\); [print\\(f\\\\\"{i['name']} - {i['frequency']} - {i['notes']}\\\\\"\\) for i in data['items']]\")",
+      "Bash(python -c ' *)",
+      "Bash(python -c \"import sys,json; d=json.load\\(sys.stdin\\); print\\(f\\\\\"Users: {len\\(d['users']\\)} ta\\\\\"\\)\")",
+      "Bash(python -c \"import sys,json; d=json.load\\(sys.stdin\\); print\\(f\\\\\"Kapelnitsalar: {d['total']} ta\\\\\"\\)\")"
+    ]
+  }
+}
