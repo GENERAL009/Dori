@@ -1,5 +1,5 @@
 export const API_BASE_URL = import.meta.env.VITE_API_URL || '/api'
-export const WS_URL = import.meta.env.VITE_WS_URL || `ws://${window.location.host}/ws`
+export const WS_URL = import.meta.env.VITE_WS_URL || `${window.location.protocol === 'https:' ? 'wss' : 'ws'}://${window.location.host}/ws`
 
 export const MEDICATION_TYPES = {
   tablet: { label: 'Tabletka', color: 'bg-blue-100 text-blue-700' },

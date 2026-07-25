@@ -13,26 +13,32 @@ export function useWebSocket() {
     if (!token || !activeUserId) return
 
     const connect = () => {
-      ws.current = new WebSocket(`${WS_URL}/notifications?token=${token}&user_id=${activeUserId}`)
+      try {
+        ws.current = new WebSocket(`${WS_URL}/notifications?token=${token}&user_id=${activeUserId}`)
 
-      ws.current.onmessage = (event) => {
-        const data = JSON.parse(event.data)
-        if (data.type === 'medication_reminder') {
-          toast({ title: data.message, variant: 'default' })
-          if (Notification.permission === 'granted') {
-            new Notification('Dori eslatmasi', { body: data.message, icon: '/favicon.svg' })
-          }
-          queryClient.invalidateQueries({ queryKey: ['notifications'] })
-          queryClient.invalidateQueries({ queryKey: ['dashboard'] })
+        ws.current.onmessage = (event) => {
+          try {
+            const data = JSON.parse(event.data)
+            if (data.type === 'medication_reminder') {
+              toast({ title: data.message, variant: 'default' })
+              if (Notification.permission === 'granted') {
+                new Notification('Dori eslatmasi', { body: data.message, icon: '/favicon.svg' })
+              }
+              queryClient.invalidateQueries({ queryKey: ['notifications'] })
+              queryClient.invalidateQueries({ queryKey: ['dashboard'] })
+            }
+          } catch {}
         }
-      }
 
-      ws.current.onclose = () => {
-        setTimeout(connect, 5000)
-      }
+        ws.current.onerror = () => {}
+
+        ws.current.onclose = () => {
+          setTimeout(connect, 10000)
+        }
+      } catch {}
     }
 
-    if (Notification.permission === 'default') {
+    if (typeof Notification !== 'undefined' && Notification.permission === 'default') {
       Notification.requestPermission()
     }
 
