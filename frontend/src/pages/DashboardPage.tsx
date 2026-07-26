@@ -136,23 +136,19 @@ export default function DashboardPage() {
       <div>
         <h2 className="text-base sm:text-lg font-semibold text-gray-900 mb-2 sm:mb-3">Bugungi dorilar</h2>
         <div className="space-y-2">
-          {(!data?.upcoming_medications || data.upcoming_medications.length === 0) && (
+          {(!data?.upcoming_medications || data.upcoming_medications.filter(m => m.status === 'pending').length === 0) && (
             <Card>
               <CardContent className="p-6 text-center text-gray-500">
-                Bugun dori yo'q
+                {data?.completed_medications ? '✅ Barcha dorilar qabul qilindi!' : 'Bugun dori yo\'q'}
               </CardContent>
             </Card>
           )}
-          {data?.upcoming_medications?.map((med, idx) => (
-            <Card key={`${med.id}-${med.time}-${idx}`} className={med.status === 'completed' ? 'opacity-60' : ''}>
+          {data?.upcoming_medications?.filter(med => med.status === 'pending').map((med, idx) => (
+            <Card key={`${med.id}-${med.time}-${idx}`}>
               <CardContent className="p-3 sm:p-4">
                 <div className="flex items-start justify-between gap-2">
                   <div className="flex items-start gap-2 sm:gap-3 flex-1 min-w-0">
-                    <div className={`w-2.5 h-2.5 sm:w-3 sm:h-3 rounded-full flex-shrink-0 mt-1.5 ${
-                      med.status === 'completed' ? 'bg-green-500' :
-                      med.status === 'missed' ? 'bg-red-500' :
-                      'bg-yellow-500'
-                    }`} />
+                    <div className="w-2.5 h-2.5 sm:w-3 sm:h-3 rounded-full flex-shrink-0 mt-1.5 bg-yellow-500" />
                     <div className="flex-1 min-w-0">
                       <p className="font-medium text-gray-900 text-sm sm:text-base truncate">{med.name}</p>
                       <div className="flex items-center gap-1.5 sm:gap-2 mt-0.5 flex-wrap">
@@ -171,34 +167,26 @@ export default function DashboardPage() {
                   </span>
                 </div>
 
-                {med.status === 'pending' && (
-                  <div className="flex gap-2 mt-3">
-                    <Button
-                      size="lg"
-                      variant="success"
-                      className="flex-1 h-12 sm:h-12 text-sm sm:text-base font-semibold touch-manipulation active:scale-[0.97]"
-                      onClick={() => takeMutation.mutate(med)}
-                      disabled={takeMutation.isPending}
-                    >
-                      ✅ Ichdim
-                    </Button>
-                    <Button
-                      size="lg"
-                      variant="outline"
-                      className="h-12 px-4 sm:px-5 text-sm sm:text-base touch-manipulation active:scale-[0.97]"
-                      onClick={() => skipMutation.mutate(med)}
-                      disabled={skipMutation.isPending}
-                    >
-                      O'tkazish
-                    </Button>
-                  </div>
-                )}
-                {med.status === 'completed' && (
-                  <div className="mt-2 flex items-center gap-1 text-green-600">
-                    <span className="text-base sm:text-lg">✅</span>
-                    <span className="text-xs sm:text-sm font-medium">Qabul qilindi</span>
-                  </div>
-                )}
+                <div className="flex gap-2 mt-3">
+                  <Button
+                    size="lg"
+                    variant="success"
+                    className="flex-1 h-12 sm:h-12 text-sm sm:text-base font-semibold touch-manipulation active:scale-[0.97]"
+                    onClick={() => takeMutation.mutate(med)}
+                    disabled={takeMutation.isPending}
+                  >
+                    ✅ Ichdim
+                  </Button>
+                  <Button
+                    size="lg"
+                    variant="outline"
+                    className="h-12 px-4 sm:px-5 text-sm sm:text-base touch-manipulation active:scale-[0.97]"
+                    onClick={() => skipMutation.mutate(med)}
+                    disabled={skipMutation.isPending}
+                  >
+                    O'tkazish
+                  </Button>
+                </div>
               </CardContent>
             </Card>
           ))}
