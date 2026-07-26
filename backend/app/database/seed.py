@@ -167,16 +167,18 @@ async def seed_database():
                 "name": "Дюфастон 10mg",
                 "type": MedicationType.TABLET,
                 "dosage": "1 tabletka",
-                "instruction": "Sikl 17-kunidan boshlab, kuniga 3 marta, 10 kun",
-                "frequency": "Kuniga 3 marta (sikl 17-26 kun)",
+                "instruction": "Kuniga 3 marta, 10 kun",
+                "frequency": "Kuniga 3 marta (10 kun)",
                 "times": ["08:00", "14:00", "20:00"],
-                "duration_days": 90,
-                "notes": "Hayz siklining 17-kunidan 10 kun davomida, 3 oy takrorlanadi",
+                "duration_days": 10,
+                "start_date": date(2026, 8, 6),
+                "notes": "6-avgustdan boshlab 10 kun",
             },
         ]
 
         for med_data in female_meds_data:
-            end_date = START_DATE + timedelta(days=med_data["duration_days"])
+            med_start = med_data.get("start_date", START_DATE)
+            end_date = med_start + timedelta(days=med_data["duration_days"])
             med = Medication(
                 name=med_data["name"],
                 type=med_data["type"],
@@ -184,7 +186,7 @@ async def seed_database():
                 instruction=med_data["instruction"],
                 frequency=med_data["frequency"],
                 times=med_data["times"],
-                start_date=START_DATE,
+                start_date=med_start,
                 end_date=end_date,
                 duration_days=med_data["duration_days"],
                 status=MedicationStatus.ACTIVE,
@@ -206,6 +208,40 @@ async def seed_database():
                     updated_by=female_user.id,
                 )
                 session.add(sched)
+
+        # --- Female Infusions (Kapelnitsa) ---
+        female_infusions_data = [
+            {
+                "name": "Immunoglobulin",
+                "solution": "NaCl 0.9% 200ml",
+                "volume": "200ml",
+                "frequency": "Har kuni",
+                "total_sessions": 5,
+                "duration_days": 5,
+                "notes": None,
+            },
+        ]
+
+        for inf_data in female_infusions_data:
+            inf_end = START_DATE + timedelta(days=inf_data["duration_days"])
+            inf = Infusion(
+                name=inf_data["name"],
+                solution=inf_data["solution"],
+                volume=inf_data["volume"],
+                frequency=inf_data["frequency"],
+                time=time(9, 0),
+                status=InfusionStatus.ACTIVE,
+                start_date=START_DATE,
+                end_date=inf_end,
+                duration_days=inf_data["duration_days"],
+                total_sessions=inf_data["total_sessions"],
+                completed_sessions=0,
+                notes=inf_data["notes"],
+                user_id=female_user.id,
+                created_by=female_user.id,
+                updated_by=female_user.id,
+            )
+            session.add(inf)
 
         # --- Male Oral Medications ---
         male_meds_data = [

@@ -286,7 +286,7 @@ async def send_reminders(app: Application):
     today = now.date()
     today_str = today.isoformat()
     current_time = now.time()
-    window_start = (now - timedelta(minutes=2)).time()
+    window_end = (now + timedelta(minutes=5)).time()
 
     async with AsyncSessionLocal() as session:
         result = await session.execute(
@@ -307,7 +307,7 @@ async def send_reminders(app: Application):
                 for t in med["times"]:
                     parts = t.split(":")
                     med_time = time(int(parts[0]), int(parts[1]))
-                    if window_start <= med_time <= current_time:
+                    if current_time <= med_time <= window_end:
                         async with AsyncSessionLocal() as session:
                             already = await _check_already_sent(
                                 session, user.telegram_id, med["name"], t[:5], today_str
