@@ -61,14 +61,17 @@ class DashboardService:
         else:
             progress = 0.0
 
-        now = datetime.now(timezone.utc)
+        tz = ZoneInfo("Asia/Tashkent")
         upcoming_meds = []
         for med in active_meds:
             for t in med.times:
-                parts = t.split(":")
                 med_logged = any(
                     l.medication_id == med.id
-                    and l.scheduled_time.strftime("%H:%M") == t
+                    and (
+                        l.scheduled_time.astimezone(tz).strftime("%H:%M") == t[:5]
+                        if l.scheduled_time.tzinfo
+                        else l.scheduled_time.strftime("%H:%M") == t[:5]
+                    )
                     for l in today_logs
                 )
                 status = "completed" if med_logged else "pending"

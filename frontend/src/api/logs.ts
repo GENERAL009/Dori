@@ -6,11 +6,17 @@ export async function getLogs(params?: { date?: string; medication_id?: string }
   return res.data
 }
 
-export async function markMedicationTaken(medicationId: string, scheduledTime: string) {
+function buildScheduledTime(timeStr: string): string {
   const today = new Date()
-  const [h, m] = scheduledTime.split(':')
-  const dt = new Date(today.getFullYear(), today.getMonth(), today.getDate(), parseInt(h), parseInt(m))
-  const isoTime = dt.toISOString()
+  const [h, m] = timeStr.split(':')
+  const year = today.getFullYear()
+  const month = String(today.getMonth() + 1).padStart(2, '0')
+  const day = String(today.getDate()).padStart(2, '0')
+  return `${year}-${month}-${day}T${h.padStart(2, '0')}:${m.padStart(2, '0')}:00+05:00`
+}
+
+export async function markMedicationTaken(medicationId: string, scheduledTime: string) {
+  const isoTime = buildScheduledTime(scheduledTime)
 
   const res = await apiClient.post<MedicationLog>(`/v1/logs/medication/${medicationId}/taken`, null, {
     params: { scheduled_time: isoTime }
@@ -19,10 +25,7 @@ export async function markMedicationTaken(medicationId: string, scheduledTime: s
 }
 
 export async function markMedicationSkipped(medicationId: string, scheduledTime: string) {
-  const today = new Date()
-  const [h, m] = scheduledTime.split(':')
-  const dt = new Date(today.getFullYear(), today.getMonth(), today.getDate(), parseInt(h), parseInt(m))
-  const isoTime = dt.toISOString()
+  const isoTime = buildScheduledTime(scheduledTime)
 
   const res = await apiClient.post<MedicationLog>(`/v1/logs/medication/${medicationId}/skip`, null, {
     params: { scheduled_time: isoTime }
