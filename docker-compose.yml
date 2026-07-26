@@ -81,6 +81,22 @@ services:
       timeout: 5s
       retries: 5
 
+  pgadmin:
+    image: dpage/pgadmin4:latest
+    container_name: dori-pgadmin
+    ports:
+      - "5050:80"
+    environment:
+      PGADMIN_DEFAULT_EMAIL: admin@dori.uz
+      PGADMIN_DEFAULT_PASSWORD: admin1234
+    volumes:
+      - pgadmin_data:/var/lib/pgadmin
+    networks:
+      - dori-network
+    restart: unless-stopped
+    depends_on:
+      - postgres
+
   nginx:
     image: nginx:alpine
     container_name: dori-nginx
@@ -104,3 +120,4 @@ networks:
 volumes:
   postgres_data:
   redis_data:
+  pgadmin_data:
