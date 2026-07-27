@@ -185,6 +185,41 @@ async def cancel(update: Update, context: ContextTypes.DEFAULT_TYPE):
     return ConversationHandler.END
 
 
+async def test_notify(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    """Send test notification to all registered users"""
+    telegram_id = update.effective_user.id
+    async with AsyncSessionLocal() as session:
+        result = await session.execute(
+            select(TelegramUser).where(
+                and_(TelegramUser.is_active == True, TelegramUser.role.isnot(None))
+            )
+        )
+        users = result.scalars().all()
+
+    if not users:
+        await update.message.reply_text("Ro'yxatdan o'tgan foydalanuvchilar yo'q.")
+        return
+
+    sent_count = 0
+    for user in users:
+        try:
+            await context.bot.send_message(
+                chat_id=user.telegram_id,
+                text=(
+                    "🧪 *Test xabar*\n\n"
+                    "Bu test eslatma. Bot to'g'ri ishlayapti! ✅\n\n"
+                    f"👤 Rol: {_role_label(user.role)}\n"
+                    f"📱 Raqam: {user.phone or '—'}"
+                ),
+                parse_mode="Markdown",
+            )
+            sent_count += 1
+        except Exception as e:
+            logger.error(f"Failed to send test to {user.telegram_id}: {e}")
+
+    await update.message.reply_text(f"✅ Test xabar {sent_count}/{len(users)} foydalanuvchiga yuborildi.")
+
+
 async def status_cmd(update: Update, context: ContextTypes.DEFAULT_TYPE):
     telegram_id = update.effective_user.id
     async with AsyncSessionLocal() as session:
@@ -230,7 +265,7 @@ async def _get_today_medications(role: TelegramRole) -> list[dict]:
     async with AsyncSessionLocal() as session:
         if role == TelegramRole.PARENT:
             query = text("""
-                SELECT m.name, m.dosage, m.times, m.instruction, u.role as user_role
+                SELECT m.name, m.dosage, m.times, m.instruction, u.role::text as user_role
                 FROM medications m
                 JOIN users u ON m.user_id = u.id
                 WHERE m.status::text = 'active'
@@ -242,13 +277,13 @@ async def _get_today_medications(role: TelegramRole) -> list[dict]:
         else:
             db_role = "male" if role == TelegramRole.MALE else "female"
             query = text("""
-                SELECT m.name, m.dosage, m.times, m.instruction, u.role as user_role
+                SELECT m.name, m.dosage, m.times, m.instruction, u.role::text as user_role
                 FROM medications m
                 JOIN users u ON m.user_id = u.id
                 WHERE m.status::text = 'active'
                   AND m.start_date <= :today
                   AND (m.end_date >= :today OR m.end_date IS NULL)
-                  AND u.role = :role
+                  AND u.role::text = :role
                 ORDER BY m.name
             """)
             result = await session.execute(query, {"today": today, "role": db_role})
@@ -388,6 +423,7 @@ def main():
     app.add_handler(conv_handler)
     app.add_handler(CommandHandler("reset", reset))
     app.add_handler(CommandHandler("status", status_cmd))
+    app.add_handler(CommandHandler("test", test_notify))
 
     logger.info("Dori Bot starting...")
     app.run_polling(allowed_updates=Update.ALL_TYPES)
