@@ -265,10 +265,10 @@ async def _get_today_medications(role: TelegramRole) -> list[dict]:
     async with AsyncSessionLocal() as session:
         if role == TelegramRole.PARENT:
             query = text("""
-                SELECT m.name, m.dosage, m.times, m.instruction, u.role::text as user_role
+                SELECT m.name, m.dosage, m.times, m.instruction, LOWER(u.role::text) as user_role
                 FROM medications m
                 JOIN users u ON m.user_id = u.id
-                WHERE m.status::text = 'active'
+                WHERE LOWER(m.status::text) = 'active'
                   AND m.start_date <= :today
                   AND (m.end_date >= :today OR m.end_date IS NULL)
                 ORDER BY u.role, m.name
@@ -277,13 +277,13 @@ async def _get_today_medications(role: TelegramRole) -> list[dict]:
         else:
             db_role = "male" if role == TelegramRole.MALE else "female"
             query = text("""
-                SELECT m.name, m.dosage, m.times, m.instruction, u.role::text as user_role
+                SELECT m.name, m.dosage, m.times, m.instruction, LOWER(u.role::text) as user_role
                 FROM medications m
                 JOIN users u ON m.user_id = u.id
-                WHERE m.status::text = 'active'
+                WHERE LOWER(m.status::text) = 'active'
                   AND m.start_date <= :today
                   AND (m.end_date >= :today OR m.end_date IS NULL)
-                  AND u.role::text = :role
+                  AND LOWER(u.role::text) = :role
                 ORDER BY m.name
             """)
             result = await session.execute(query, {"today": today, "role": db_role})
