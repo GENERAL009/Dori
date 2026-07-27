@@ -233,7 +233,7 @@ async def _get_today_medications(role: TelegramRole) -> list[dict]:
                 SELECT m.name, m.dosage, m.times, m.instruction, u.role as user_role
                 FROM medications m
                 JOIN users u ON m.user_id = u.id
-                WHERE m.status = 'active'
+                WHERE m.status::text = 'active'
                   AND m.start_date <= :today
                   AND (m.end_date >= :today OR m.end_date IS NULL)
                 ORDER BY u.role, m.name
@@ -245,7 +245,7 @@ async def _get_today_medications(role: TelegramRole) -> list[dict]:
                 SELECT m.name, m.dosage, m.times, m.instruction, u.role as user_role
                 FROM medications m
                 JOIN users u ON m.user_id = u.id
-                WHERE m.status = 'active'
+                WHERE m.status::text = 'active'
                   AND m.start_date <= :today
                   AND (m.end_date >= :today OR m.end_date IS NULL)
                   AND u.role = :role
